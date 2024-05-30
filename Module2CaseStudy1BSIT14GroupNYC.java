@@ -1,203 +1,171 @@
-import java.awt.event.*;
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-public class Module2CaseStudy1BSIT14GroupNYC extends JFrame implements ActionListener {
-   JButton button1,button2,button3,button4;
- 
- //  private List<String> totalItemBought = new ArrayList<>();
-   	private String descriptionItemBought[];
-    private int quantityItemBought[];
-    private double totalPriceItemBought[];
-	private double totalBill;
-	private int totalQuantity;
-   private int itemBought = 0;
+public class Module2CaseStudy1BSIT14GroupNYC extends JFrame {
 
-   public Module2CaseStudy1BSIT14GroupNYC() {
-        setTitle("MINI SHOP");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        
+    static double totalBill = 0.0;
+    static int totalItemsBought = 0;
+    static StringBuilder receipt = new StringBuilder("Items Bought:\n");
+
+    String[] itemCodes = {"A", "B", "C", "D", "E"};
+    String[] itemDescriptions = {
+            "3-in-1 coffee",
+            "Cup noodles",
+            "Laundry soap",
+            "Bottled water - 1 liter",
+            "Bottled water - 500 ml"};
+    double[] itemPrices = {10.00, 20.00, 25.00, 20.00, 12.00};
+    int[] itemStocks = {100, 36, 15, 8, 24};
+
+    JTable itemTable;
+    DefaultTableModel tableModel;
+
+    public Module2CaseStudy1BSIT14GroupNYC() {
+        // Create a panel to hold the buttons
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new GridLayout(1, 4, 10, 10)); // 1 row, 4 columns, with spacing
+
         // Create buttons
-        button1 = new JButton("Buy");
-		button1.addActionListener(this);
-        button2 = new JButton("Payment");
-		button2.addActionListener(this);
-        button3 = new JButton("Inventory");
-		button3.addActionListener(this);
-        button4 = new JButton("Exit");
-		button4.addActionListener(this);
-        
-        // Create labels
-        JLabel label1 = new JLabel("Item code");
-        JLabel label2 = new JLabel("Item Description");
-        JLabel label3 = new JLabel("Price");
-        JLabel label4 = new JLabel("A");
-		JLabel label5 = new JLabel("3-in-1 coffee");
-		JLabel label6 = new JLabel("10.00");
-		JLabel label7 = new JLabel("B");
-		JLabel label8 = new JLabel("Cup Noodles");
-		JLabel label9 = new JLabel("20.00");
-		JLabel label10 = new JLabel("C");
-		JLabel label11 = new JLabel("Laundry soap");
-		JLabel label12 = new JLabel("25.00");
-		JLabel label13 = new JLabel("D");
-		JLabel label14 = new JLabel("Bottled water - 1 liter");
-		JLabel label15 = new JLabel("20.00");
-		JLabel label16 = new JLabel("E");
-		JLabel label17 = new JLabel("Bottled water - 500 ml");
-        JLabel label18 = new JLabel("12.00");
-        // Set layout to BorderLayout
+        JButton buyButton = new JButton("Buy");
+        JButton paymentButton = new JButton("Payment");
+        JButton inventoryButton = new JButton("Inventory");
+        JButton exitButton = new JButton("Exit");
+
+        // Add action listeners to buttons
+        buyButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                buyItem();
+            }
+        });
+        paymentButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                makePayment();
+            }
+        });
+        inventoryButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                showInventory();
+            }
+        });
+        exitButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                System.exit(0);
+            }
+        });
+
+        // Add buttons to the panel
+        buttonPanel.add(buyButton);
+        buttonPanel.add(paymentButton);
+        buttonPanel.add(inventoryButton);
+        buttonPanel.add(exitButton);
+
+        // Create a table to show the item information
+        String[] columnNames = {"Item Code", "Item Description", "Price"};
+        tableModel = new DefaultTableModel(columnNames, 0);
+        updateTableModel();
+        itemTable = new JTable(tableModel);
+        JScrollPane scrollPane = new JScrollPane(itemTable);
+
+        // Add the button panel and the table to the frame
         setLayout(new BorderLayout());
-        
-        // Create a panel to hold buttons and labels
-        JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(new GridLayout(6,3,75,0)); // 2 rows, 4 columns
-        
-        // Add labels and buttons to the panel
-        mainPanel.add(label1);
-        mainPanel.add(label2);
-        mainPanel.add(label3);
-        mainPanel.add(label4);
-		mainPanel.add(label5);
-		mainPanel.add(label6);
-		mainPanel.add(label7);
-		mainPanel.add(label8);
-		mainPanel.add(label9);
-		mainPanel.add(label10);
-		mainPanel.add(label11);
-		mainPanel.add(label12);
-		mainPanel.add(label13);
-		mainPanel.add(label14);
-		mainPanel.add(label15);
-		mainPanel.add(label16);
-		mainPanel.add(label17);
-		mainPanel.add(label18);
-		add(mainPanel, BorderLayout.NORTH);
-		
-		
-		JPanel mainPanel2 = new JPanel();
-		mainPanel2.setLayout(new FlowLayout());
-        mainPanel2.add(button1);
-        mainPanel2.add(button2);
-        mainPanel2.add(button3);
-        mainPanel2.add(button4);
-		
-        
-		add(mainPanel2, BorderLayout.CENTER);
-        // Add the panel to the frame
-        
-        
-        // Set frame size and make it visible
-        setSize(400, 200);
-        setVisible(true);
-    }//end of GUI JFRAME
-	
-	@Override
-	public void actionPerformed(ActionEvent b){
-		
+        add(buttonPanel, BorderLayout.SOUTH);
+        add(scrollPane, BorderLayout.CENTER);
 
-		if (b.getSource()==button1){
+        // Set frame properties
+        setTitle("Store Menu");
+        setSize(400, 170);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+    }
+
+    private void buyItem() {
+        // Your existing buyItem code here
+        String itemCode = JOptionPane.showInputDialog("Enter item code to buy:");
+        int index = -1;
+		String userItemcodes = "";
+        for (int i = 0; i < itemCodes.length; i++) {
+            if (itemCodes[i].equalsIgnoreCase(itemCode)) {
+                index = i;
+				userItemcodes = itemCodes[i];
+                break;
+            }
+        }
+        if (index != -1) {
+            int quantity = Integer.parseInt(JOptionPane.showInputDialog("Enter quantity:"));
 			
-
-		
-		itemBought++;
-		
-		JFrame frame = new JFrame();
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		String[] items = {"3-in-1 coffee", "Cup noodles", "Laundry soap", "Bottled water - 1 liter", "Bottled water - 500 ml"};
-        double[] prices = {30.00, 20.00, 25.00, 15.00, 12.00};
-        String[] codes = {"A", "B", "C", "D", "E"};
-
-        double totalBill = 0.0;
-        boolean continueShopping = true;
-		
-
-        while (continueShopping) {
-            String userInputItem = JOptionPane.showInputDialog(frame,"Please enter the code of the desired item (A, B, C, D, E):");
-
-            
-            int itemIndex = -1;
-			String userItemcodes = "";
-            for (int i = 0; i < codes.length; i++) {
-                if (codes[i].equalsIgnoreCase(userInputItem)) {
-                    itemIndex = i;
-					userItemcodes = codes[i];
-                    break;
-                }
-            }
-
-            if (itemIndex == -1) {
-                JOptionPane.showMessageDialog(frame, "Invalid item code. Please try again.");
-                continue;
-            }
-            
-            boolean validQuantity = false;
-            int quantity = 0;
-            while (!validQuantity) {
-                String quantityInput = JOptionPane.showInputDialog(frame,"Enter quantity for " + items[itemIndex] + ":");
-                try {
-                    quantity = Integer.parseInt(quantityInput);
-                    if (quantity > 0) {
-                        validQuantity = true;
-                    } else {
-                        JOptionPane.showMessageDialog(frame, "Quantity must be greater than 0. Please try again.");
-                    }
-                } catch (NumberFormatException e) {
-                    JOptionPane.showMessageDialog(frame, "Invalid quantity. Please enter a number.");
-                }
-            }
 			String message = "Would you like to continue this purchase.\n" +
                          "Item code: "+userItemcodes+"\n" +
                          "Quantity; "+quantity;
 			
-			 int choice = JOptionPane.showConfirmDialog( frame, message, "Confirmation", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
-		
-		if (choice == JOptionPane.YES_OPTION){
-			double itemTotal = prices[itemIndex] * quantity;
-            totalBill += itemTotal;
-            totalQuantity += quantity;
-			
-            JOptionPane.showMessageDialog(frame,"Your transaction has been recorded.");
-
+			 int confirmation = JOptionPane.showConfirmDialog( null, message, "Confirmation", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
+			 
+			 if(confirmation == JOptionPane.YES_OPTION){
+				if (itemStocks[index] >= quantity) {
+                itemStocks[index] -= quantity;
+                totalBill += itemPrices[index] * quantity;
+				double totalItem = itemPrices[index] * quantity;
+                totalItemsBought += quantity;
+                receipt.append(itemDescriptions[index]).append("   ").append(quantity).append("   ").append(totalItem).append("\n");
+                JOptionPane.showMessageDialog(null, "Item added to cart!");
+                updateTableModel();
+            } else {
+                JOptionPane.showMessageDialog(null, "Not enough stock!");
             
-            /*int response = JOptionPane.showConfirmDialog(null, "Do you want to buy another item?", "Continue Shopping?", JOptionPane.YES_NO_OPTION);
-            if (response == JOptionPane.NO_OPTION) {*/
-			
-			
-			//}
-			continueShopping = false;
+        } 
 				 
-        } else if (choice == JOptionPane.NO_OPTION) {
-           continueShopping = false;
-        } else {
-           continueShopping = false;
+				 
+		}else {System.exit(0);}
+			 
+	
+            
+    }else {
+            JOptionPane.showMessageDialog(null, "Invalid item code!");
         }
-            }frame.dispose();
-        
-		}//button 1
-		if (b.getSource() ==button2){
-			String message = "";
-			for (int i = 1; i <= itemBought; i++){
-				
-			 message = "Items Bought:\n\n" +
-                         descriptionItemBought[i]+"\t"+quantityItemBought[i]+"\t"+totalPriceItemBought[i]+"\n" +
-                         "No. of Item Purchased; "+totalQuantity+"\n"+
-						 "Total Bill: "+totalBill+"\n\n"+
-			"\"Thank you for shopping\"";}
-			
-						 
-			JOptionPane.showMessageDialog(null,message,"PAYMENT",JOptionPane.INFORMATION_MESSAGE);			 
-		}//button 2
-		if (b.getSource() ==button3){}
-		if (b.getSource() ==button4){
-			System.exit(0);
-		}
 	}
+    private void makePayment() {
+        // Your existing makePayment code here
+        //JOptionPane.showMessageDialog(null, "Total Bill: " + totalBill + "\nItems Bought: " + totalItemsBought + "\n" + receipt.toString());
+		JOptionPane.showMessageDialog(null,receipt.toString() + "Total Bill: " + totalBill + "\nNo. of item Purchased: " + totalItemsBought + "\n\n\"Thank you for shopping\"" );
+        totalBill = 0.0;
+        totalItemsBought = 0;
+        receipt.setLength(0);
+        receipt.append("Items Bought:\n");
+    }
+
+    private void showInventory() {
+        // Create a dialog to show the inventory table
+        JDialog inventoryDialog = new JDialog(this, "Inventory", true);
+        String[] columnNames = {"Item Code", "Stock"};
+        Object[][] data = new Object[itemCodes.length][2];
+        for (int i = 0; i < itemCodes.length; i++) {
+            data[i][0] = itemCodes[i];
+            data[i][1] = itemStocks[i];
+        }
+
+        JTable inventoryTable = new JTable(new DefaultTableModel(data, columnNames));
+        JScrollPane scrollPane = new JScrollPane(inventoryTable);
+        inventoryDialog.add(scrollPane, BorderLayout.CENTER);
+
+        inventoryDialog.setSize(400, 300);
+        inventoryDialog.setLocationRelativeTo(this);
+        inventoryDialog.setVisible(true);
+    }
+
+    private void updateTableModel() {
+        tableModel.setRowCount(0); // Clear the table
+        for (int i = 0; i < itemCodes.length; i++) {
+            tableModel.addRow(new Object[]{itemCodes[i], itemDescriptions[i], itemPrices[i]});
+        }
+    }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new Module2CaseStudy1BSIT14GroupNYC());
-		  	
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                new Module2CaseStudy1BSIT14GroupNYC().setVisible(true);
+            }
+        });
     }
 }
